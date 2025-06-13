@@ -115,7 +115,7 @@ L'application expose plusieurs endpoints REST pour manipuler les entités :
 
 ## Système de Tests
 
-L'application est dotée d'un système complet de tests unitaires et d'intégration pour assurer la fiabilité du code. Nous utilisons JUnit 5 comme framework de test et Mockito pour simuler les dépendances.
+L'application est dotée d'un système complet de tests unitaires et d'intégration pour assurer la fiabilité du code. On utilise JUnit 5 comme framework de test et Mockito pour simuler les dépendances.
 
 ### Structure des Tests
 
@@ -134,7 +134,7 @@ Les tests sont organisés en plusieurs catégories :
 
 ### Configuration de la Base de Données de Test
 
-Pour les tests, nous utilisons une base de données H2 en mémoire, configurée via le profil "test" :
+Pour les tests, je utilise une base de données H2 en mémoire, configurée via le profil "test" :
 
 1. **application-test.properties**
    ```properties
@@ -157,26 +157,13 @@ Pour les tests, nous utilisons une base de données H2 en mémoire, configurée 
    spring.jpa.properties.hibernate.id.new_generator_mappings=true
    ```
 
-2. **Initialisation Programmatique des Données de Test**
-   Au lieu d'utiliser des scripts SQL qui peuvent causer des problèmes avec les séquences d'ID, nous utilisons une approche programmatique pour initialiser les données de test via la classe `TestDataInitializer`. Cette classe est annotée avec `@Component` et `@Profile("test")` pour s'assurer qu'elle n'est utilisée que dans l'environnement de test.
-
-### Gestion des Conflits Horaires dans les Tests
-
-Un aspect important de l'application est la gestion des conflits horaires entre cours. Notre approche de test pour cette fonctionnalité comprend :
-
-1. **Tests Unitaires** : Vérifiant que les méthodes de détection de conflit fonctionnent correctement avec des données simulées.
-
-2. **Tests d'Intégration** : Vérifiant que le système complet gère correctement les conflits lors de la création de cours avec des horaires qui se chevauchent.
-
-### Stratégies de Test
-
-1. **Filtrage de Conflits en Java** : Plutôt que d'utiliser des requêtes JPQL complexes (qui peuvent poser problème avec H2), nous avons implémenté la logique de détection de conflits horaires en Java dans la couche service.
-
-2. **Vérifications Robustes contre les NullPointerException** : Nous avons ajouté des vérifications nulls dans les méthodes critiques pour éviter les NullPointerException lors du traitement des cours avec des données manquantes.
-
-3. **Utilisation de `lenient()` avec Mockito** : Pour éviter les erreurs `UnnecessaryStubbingException`, nous utilisons `lenient()` sur les stubs qui pourraient ne pas être utilisés dans certains scénarios de test.
-
 ### Exécution des Tests
+
+Test global : 
+
+```bash
+mvn test
+```
 
 Pour exécuter tous les tests avec le profil "test" activé, utilisez la commande Maven suivante :
 
@@ -200,18 +187,6 @@ Exemples :
   ```bash
   mvn test -Dtest=CoursServiceTest -Dspring.profiles.active=test
   ```
-
-### Dépannage des Tests
-
-En cas d'échec des tests, voici quelques pistes de résolution :
-
-1. **Problèmes de séquences d'ID** : Si des erreurs surviennent concernant les ID des entités, vérifiez que l'initialisation des données de test respecte les séquences d'ID générées automatiquement.
-
-2. **Conflits horaires inattendus** : Si les tests de conflit horaire échouent, vérifiez que les dates et durées des cours de test sont correctement définies pour provoquer ou éviter des chevauchements.
-
-3. **Stubs Mockito non utilisés** : Si Mockito génère des erreurs `UnnecessaryStubbingException`, utilisez `lenient()` pour les stubs qui pourraient ne pas être appelés dans tous les scénarios de test.
-
-4. **Problèmes de persistance** : Si des entités ne sont pas correctement sauvegardées ou récupérées, vérifiez les relations JPA et assurez-vous que toutes les entités associées sont correctement initialisées.
 
 ## API REST (suite)
 
@@ -238,14 +213,6 @@ En cas d'échec des tests, voici quelques pistes de résolution :
 - `GET /api/salle/disponibles` : Récupérer les salles disponibles pour une période donnée
 - `POST /api/salle` : Créer une nouvelle salle
 
-## Configuration
-La configuration de l'application se fait via le fichier `application.properties` et les variables d'environnement :
-
-- Le serveur utilise le port spécifié par la variable `SERVER_PORT`
-- La base de données est configurée via les variables `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, et `DB_PASSWORD`
-- Les options de génération du schéma de base de données sont définies par `DDL_AUTO`
-- L'initialisation des données est contrôlée par `SQL_INIT_PLATFORM` et `SQL_INIT_MODE`
-
 ## Jeu de données de test
 Le fichier `data-donnees-test.sql` contient des données initiales pour tester l'application :
 - 2 étudiants avec les IDs 1 et 2
@@ -264,40 +231,4 @@ Le fichier `data-donnees-test.sql` contient des données initiales pour tester l
 7. **Service métier dédié** : Utilisation d'une couche service pour centraliser la logique métier et les validations
 8. **Gestion d'exceptions personnalisées** : Utilisation d'exceptions dédiées pour les erreurs métier (conflits, capacité)
 
-## Démarrage de l'application
-L'application peut être démarrée en exécutant la méthode `main` de la classe `E3Tp25Application`. Elle nécessite une base de données MySQL accessible avec les paramètres définis dans les variables d'environnement.
 
-## Migration de la base de données
-Pour migrer une base de données existante vers la nouvelle structure, le script `migration.sql` est fourni. Il ajoute les nouvelles tables et colonnes nécessaires pour supporter les fonctionnalités avancées de gestion des cours.
-
-## Exemples d'utilisation
-
-### Créer un cours présentiel
-```bash
-curl -X POST http://localhost:8080/api/cours/creer \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nom": "Algorithmique",
-    "debut": "2025-06-20T10:00:00",
-    "duree": 120,
-    "professeurId": 3,
-    "etudiantIds": [1, 2],
-    "typeCours": "PRESENTIEL",
-    "salleId": 1
-  }'
-```
-
-### Créer un cours distanciel
-```bash
-curl -X POST http://localhost:8080/api/cours/creer \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nom": "Base de données",
-    "debut": "2025-06-20T14:00:00",
-    "duree": 90,
-    "professeurId": 4,
-    "etudiantIds": [1],
-    "typeCours": "DISTANCIEL",
-    "lienReunion": "https://teams.microsoft.com/l/meetup-join/..."
-  }'
-```
