@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Document</title>
+</head>
+<body>
+<fieldset>
+    <h3>Exemple 1 : Date picker simple</h3>
+<p><input id="date-picker" type="date"></p>
+<p>
+    <span>Value date picker : </span>
+    <span id="date-picker-value"></span>
+</p>
+<p>
+    <span>Value ISO format : </span>
+    <span id="date-picker-iso-format"></span>
+</p>
+<p>
+    <i>Note : La date ISO est correspond au fuseau UTC ou GMT+0</i>
+</p>
+<p>
+    <i>Si la date a été ajoutée en GMT+2 (heure de paris), alors la date ISO est la veille à 22h00</i>
+</p>
+</fieldset>
+<fieldset>
+<h3>Exemple 2 : Datetime picker </h3>
+<p>
+    <input id="datetime-picker" type="datetime-local">
+</p>
+<p>
+    <span>Value datetime picker : </span>
+    <span id="datetime-picker-value"></span>
+</p>
+<p>
+    <span>Value ISO format : </span>
+    <span id="datetime-picker-iso-format"></span>
+</p>
+<p>
+    <i>Note : Si la date a été ajoutée en GMT+2 (heure de paris), alors la date ISO est 2h avant</i>
+</p>
+</fieldset>
+<fieldset>
+
+<h3>Exemple 3 : Date picker + time picker</h3>
+<p>
+    <input id="datetime-picker-combined-date" type="date">
+    <input id="datetime-picker-combined-time" type="time">
+</p>
+<p>
+    <span>Value date : </span>
+    <span id="datetime-picker-combined-date-value"></span>
+</p>
+<p>
+    <span>Value time : </span>
+    <span id="datetime-picker-combined-time-value"></span>
+</p>
+<p>
+    <span>Value ISO format : </span>
+    <span id="datetime-picker-combined-iso-format"></span>
+</p>
+</fieldset>
+
+</body>
+</html>
+
+
+<script>
+
+    // ----- get from DOM -----
+    const datePicker = document.querySelector("#date-picker")
+    const datePickerValue = document.querySelector("#date-picker-value")
+    const datePickerIsoFormat = document.querySelector("#date-picker-iso-format")
+
+    const dateTimePicker = document.querySelector("#datetime-picker")
+    const dateTimePickerValue = document.querySelector("#datetime-picker-value")
+    const dateTimePickerIsoFormat = document.querySelector("#datetime-picker-iso-format")
+
+    const dateTimePickerCombinedDate = document.querySelector("#datetime-picker-combined-date")
+    const dateTimePickerCombinedTime = document.querySelector("#datetime-picker-combined-time")
+    const dateTimePickerCombinedDateValue = document.querySelector("#datetime-picker-combined-date-value")
+    const dateTimePickerCombinedTimeValue = document.querySelector("#datetime-picker-combined-time-value")
+    const dateTimePickerCombinedIsoFormat = document.querySelector("#datetime-picker-combined-iso-format")
+
+    // ----- init input -----
+
+    /**
+     * Prend en paramètre une date et retourne un format accepté par un input de type date
+     * @param date une instance de Date (la date actuelle par défaut)
+     * @returns {string} retourne la date au format YYYY-MM-DD non basé sur les fuseaux horaires
+     */
+    const toInputDateFormat = (date = new Date()) => {
+        return date.toISOString()
+            .substring(0, 10)
+    }
+
+    /**
+     * Prend en paramètre une date et retourne un format accepté par un input de type datetime-local
+     * @param date une instance de Date (la date actuelle par défaut)
+     * @returns {string} retourne la date au format YYYY-MM-DDThh:mm:ss non basé sur les fuseaux horaires
+     */
+    const toInputDatetimeFormat = (now = new Date()) => {
+        return new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+            .toISOString()
+            .substring(0, 16)
+    }
+
+    /**
+     * Prend en paramètre une date et retourne un format accepté par un input de type time
+     * @param date une instance de Date (la date actuelle par défaut)
+     * @returns {string} retourne la date au format hh:mm:ss non basé sur les fuseaux horaires
+     */
+    const toInputTimeFormat = (now = new Date()) => {
+        return new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+            .toISOString()
+            .substring(11, 19)
+    }
+
+    const inputDateValueToIso = (value) => {
+        return new Date(value + 'T00:00:00').toISOString()
+    }
+
+    const inputDatetimeValueToIso = (value) => {
+        return new Date(dateTimePicker.value).toISOString()
+    }
+
+    const combinedInputDatetimeValueToIso = (date, hours) => {
+        return new Date(date + 'T' + hours).toISOString();
+    }
+
+
+    //exemple 1
+    datePicker.value = toInputDateFormat()
+    //exemple 2
+    dateTimePicker.value = toInputDatetimeFormat()
+    //exemple 13
+    dateTimePickerCombinedDate.value = toInputDateFormat()
+    dateTimePickerCombinedTime.value = toInputTimeFormat()
+
+    console.log(datePicker.value)
+
+    const refresh = () => {
+        //exemple 1
+
+        console.log(new Date(datePicker.value))
+        console.log(new Date(datePicker.value).toDateString())
+        console.log(new Date(datePicker.value).toISOString())
+        console.log(new Date(datePicker.value).toLocaleDateString())
+        console.log(new Date(datePicker.value).toUTCString())
+
+        datePickerValue.innerHTML = datePicker.value
+        datePickerIsoFormat.innerHTML = inputDateValueToIso(datePicker.value);
+
+        //exemple 2
+        dateTimePickerValue.innerHTML = dateTimePicker.value
+        dateTimePickerIsoFormat.innerHTML = inputDatetimeValueToIso(dateTimePicker.value)
+
+        //exemple 3
+        dateTimePickerCombinedDateValue.innerHTML = dateTimePickerCombinedDate.value
+        dateTimePickerCombinedTimeValue.innerHTML = dateTimePickerCombinedTime.value
+
+        dateTimePickerCombinedIsoFormat.innerHTML = combinedInputDatetimeValueToIso(
+            dateTimePickerCombinedDate.value,
+            dateTimePickerCombinedTime.value);
+    }
+
+    datePicker.addEventListener("change", refresh)
+    dateTimePicker.addEventListener("change", refresh)
+    dateTimePickerCombinedDate.addEventListener("change", refresh)
+    dateTimePickerCombinedTime.addEventListener("change", refresh)
+
+    refresh()
+
+</script>
