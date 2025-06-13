@@ -1,7 +1,11 @@
 package edu.fbansept.e3tp25.controller;
 
 import edu.fbansept.e3tp25.dao.CoursDao;
+import edu.fbansept.e3tp25.dto.CreateCoursDto;
 import edu.fbansept.e3tp25.model.Cours;
+import edu.fbansept.e3tp25.model.Distanciel;
+import edu.fbansept.e3tp25.model.Presentiel;
+import edu.fbansept.e3tp25.service.CoursService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,18 +16,37 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/cours")
+@CrossOrigin
 public class CoursController {
 
     protected CoursDao coursDao;
+    protected CoursService coursService;
 
     @Autowired
-    public CoursController(CoursDao coursDao) {
+    public CoursController(CoursDao coursDao, CoursService coursService) {
         this.coursDao = coursDao;
+        this.coursService = coursService;
     }
 
     @GetMapping("/liste")
     public ResponseEntity<List<Cours>> getAll() {
         return ResponseEntity.ok(coursDao.findAll());
+    }
+    
+    @GetMapping("/presentiel/liste")
+    public ResponseEntity<List<Presentiel>> getAllPresentiel() {
+        return ResponseEntity.ok(coursDao.findAll().stream()
+            .filter(cours -> cours instanceof Presentiel)
+            .map(cours -> (Presentiel) cours)
+            .toList());
+    }
+    
+    @GetMapping("/distanciel/liste")
+    public ResponseEntity<List<Distanciel>> getAllDistanciel() {
+        return ResponseEntity.ok(coursDao.findAll().stream()
+            .filter(cours -> cours instanceof Distanciel)
+            .map(cours -> (Distanciel) cours)
+            .toList());
     }
 
     @GetMapping("/{id}")
@@ -38,9 +61,15 @@ public class CoursController {
         return ResponseEntity.ok(coursOptional.get());
     }
 
+    // Ancienne méthode conservée pour compatibilité
     @PostMapping("")
     public ResponseEntity<Cours> add(@RequestBody Cours cours) {
-        coursDao.save(cours);
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+    
+    @PostMapping("/creer")
+    public ResponseEntity<Cours> creerCours(@RequestBody CreateCoursDto dto) {
+        Cours cours = coursService.creerCours(dto);
         return new ResponseEntity<>(cours, HttpStatus.CREATED);
     }
 
